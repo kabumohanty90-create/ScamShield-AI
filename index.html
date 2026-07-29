@@ -4,12 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>ScamShield AI - Scam Detection</title>
+<title>ScamShield AI</title>
 
 <style>
+*{
+box-sizing:border-box;
+}
+
 body{
 margin:0;
-font-family:Arial,sans-serif;
+font-family:Arial, sans-serif;
 background:#020617;
 color:white;
 }
@@ -17,7 +21,7 @@ color:white;
 .container{
 max-width:900px;
 margin:auto;
-padding:40px 20px;
+padding:30px 20px;
 }
 
 .logo{
@@ -26,47 +30,48 @@ font-weight:800;
 color:#10b981;
 }
 
-.subtitle{
+.tagline{
 color:#94a3b8;
+margin-bottom:25px;
 }
 
 .card{
-margin-top:30px;
 background:#0f172a;
-padding:25px;
-border-radius:20px;
 border:1px solid #1e293b;
+border-radius:20px;
+padding:25px;
 }
 
 textarea{
 width:100%;
 height:160px;
+padding:15px;
+border-radius:12px;
+border:1px solid #334155;
 background:#020617;
 color:white;
-border:1px solid #334155;
-border-radius:12px;
-padding:15px;
 font-size:16px;
-box-sizing:border-box;
+resize:none;
 }
 
 button{
-margin-top:20px;
 width:100%;
+margin-top:20px;
 padding:15px;
+border:0;
 border-radius:12px;
-border:none;
 background:#10b981;
+color:#022c22;
 font-size:18px;
 font-weight:bold;
 cursor:pointer;
 }
 
 .result{
+display:none;
 margin-top:25px;
 padding:20px;
 border-radius:15px;
-display:none;
 background:#111827;
 }
 
@@ -82,10 +87,17 @@ color:#f59e0b;
 color:#22c55e;
 }
 
-li{
+.reason{
+color:#cbd5e1;
 margin:8px 0;
 }
+
+.tip{
+margin-top:15px;
+color:#34d399;
+}
 </style>
+
 </head>
 
 <body>
@@ -93,8 +105,7 @@ margin:8px 0;
 <div class="container">
 
 <div class="logo">🛡️ ScamShield AI</div>
-
-<p class="subtitle">
+<p class="tagline">
 AI-powered scam message detection and safety assistant
 </p>
 
@@ -102,7 +113,7 @@ AI-powered scam message detection and safety assistant
 
 <h2>Analyze Suspicious Message</h2>
 
-<textarea id="message" placeholder="Paste SMS, WhatsApp, Email message here..."></textarea>
+<textarea id="message" placeholder="Paste SMS, WhatsApp, Email or suspicious message here..."></textarea>
 
 <button onclick="analyzeMessage()">
 Analyze Message
@@ -111,6 +122,7 @@ Analyze Message
 <div id="result" class="result"></div>
 
 </div>
+
 </div><script>
 
 function analyzeMessage(){
@@ -120,45 +132,82 @@ let text = document.getElementById("message").value.toLowerCase();
 let risk = 0;
 let reasons = [];
 
-let scamWords = {
-"lottery":20,
-"winner":20,
-"prize":15,
-"otp":20,
-"verify":15,
-"urgent":15,
-"click link":20,
-"bank":10,
-"upi":15,
-"password":20,
-"account":10,
-"free money":25,
-"claim":15
-};
+function addRisk(points, reason){
+risk += points;
+reasons.push(reason);
+}
 
-for(let word in scamWords){
-if(text.includes(word)){
-risk += scamWords[word];
-reasons.push("Suspicious sign detected: " + word);
+
+// Scam patterns
+
+if(text.includes("lottery") || text.includes("prize") || text.includes("winner")){
+addRisk(35,"Fake lottery or prize offer detected");
 }
+
+if(text.includes("otp")){
+addRisk(35,"OTP request detected - scammers often use this to steal accounts");
 }
+
+if(text.includes("bank") && (text.includes("verify") || text.includes("link") || text.includes("otp"))){
+addRisk(40,"Bank verification scam pattern detected");
+}
+
+if(text.includes("click") && text.includes("link")){
+addRisk(30,"Suspicious link request detected");
+}
+
+if(text.includes("account blocked") || text.includes("account will be blocked") || text.includes("suspended")){
+addRisk(35,"Account threat or blocking message detected");
+}
+
+if(text.includes("kyc") || text.includes("update your details")){
+addRisk(30,"Possible fake KYC/update request detected");
+}
+
+if(text.includes("password") || text.includes("pin")){
+addRisk(35,"Sensitive information request detected");
+}
+
+if(text.includes("free money") || text.includes("guaranteed profit")){
+addRisk(35,"Unrealistic money promise detected");
+}
+
+if(text.includes("job") && (text.includes("pay") || text.includes("fee") || text.includes("registration"))){
+addRisk(30,"Possible fake job scam detected");
+}
+
+if(text.includes("investment") || text.includes("crypto")){
+addRisk(25,"Investment scam indicator detected");
+}
+
+if(text.includes("urgent") || text.includes("immediately") || text.includes("act now")){
+addRisk(20,"Pressure or urgency tactic detected");
+}
+
+
+// Limit score
 
 if(risk > 100){
 risk = 100;
 }
 
+
 let result = document.getElementById("result");
+
+let reasonsHTML = "";
+
+reasons.forEach(function(item){
+reasonsHTML += `<p class="reason">⚠️ ${item}</p>`;
+});
+
 
 if(risk >= 70){
 
 result.innerHTML = `
 <h2 class="high">🚨 HIGH RISK SCAM</h2>
 <h3>Risk Score: ${risk}%</h3>
-<p><b>Why detected:</b></p>
-<ul>
-${reasons.map(r=>`<li>${r}</li>`).join("")}
-</ul>
-<p>⚠️ Do not share OTP, passwords or banking details.</p>
+${reasonsHTML}
+<p class="tip">🛡️ Safety Tip: Do not click links or share OTP, passwords, or banking details.</p>
 `;
 
 }
@@ -168,10 +217,8 @@ else if(risk >= 40){
 result.innerHTML = `
 <h2 class="medium">⚠️ MEDIUM RISK</h2>
 <h3>Risk Score: ${risk}%</h3>
-<ul>
-${reasons.map(r=>`<li>${r}</li>`).join("")}
-</ul>
-<p>Be careful before clicking links or sharing information.</p>
+${reasonsHTML}
+<p class="tip">🛡️ Verify the sender before taking any action.</p>
 `;
 
 }
@@ -181,7 +228,8 @@ else{
 result.innerHTML = `
 <h2 class="safe">✅ LOW RISK</h2>
 <h3>Risk Score: ${risk}%</h3>
-<p>No major scam indicators found.</p>
+<p>No strong scam indicators found.</p>
+<p class="tip">🛡️ Still stay cautious with unknown messages.</p>
 `;
 
 }
