@@ -3,80 +3,87 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ScamShield AI</title>
+
+<title>ScamShield AI - Scam Detection</title>
 
 <style>
 body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#020617;
-  color:white;
-  min-height:100vh;
+margin:0;
+font-family:Arial,sans-serif;
+background:#020617;
+color:white;
 }
 
 .container{
-  max-width:900px;
-  margin:auto;
-  padding:40px 20px;
+max-width:900px;
+margin:auto;
+padding:40px 20px;
 }
 
 .logo{
-  font-size:32px;
-  font-weight:bold;
-  color:#10b981;
+font-size:34px;
+font-weight:800;
+color:#10b981;
 }
 
 .subtitle{
-  color:#94a3b8;
+color:#94a3b8;
 }
 
 .card{
-  margin-top:30px;
-  background:#0f172a;
-  border:1px solid #1e293b;
-  border-radius:20px;
-  padding:25px;
+margin-top:30px;
+background:#0f172a;
+padding:25px;
+border-radius:20px;
+border:1px solid #1e293b;
 }
 
 textarea{
-  width:100%;
-  height:150px;
-  background:#020617;
-  color:white;
-  border:1px solid #334155;
-  border-radius:12px;
-  padding:15px;
-  font-size:16px;
-  box-sizing:border-box;
+width:100%;
+height:160px;
+background:#020617;
+color:white;
+border:1px solid #334155;
+border-radius:12px;
+padding:15px;
+font-size:16px;
+box-sizing:border-box;
 }
 
 button{
-  margin-top:20px;
-  width:100%;
-  padding:15px;
-  border:none;
-  border-radius:12px;
-  background:#10b981;
-  color:#022c22;
-  font-size:18px;
-  font-weight:bold;
-  cursor:pointer;
+margin-top:20px;
+width:100%;
+padding:15px;
+border-radius:12px;
+border:none;
+background:#10b981;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
 }
 
 .result{
-  margin-top:25px;
-  padding:20px;
-  border-radius:15px;
-  background:#111827;
-  display:none;
+margin-top:25px;
+padding:20px;
+border-radius:15px;
+display:none;
+background:#111827;
 }
 
-.green{
- color:#22c55e;
+.high{
+color:#ef4444;
 }
 
-.red{
- color:#ef4444;
+.medium{
+color:#f59e0b;
+}
+
+.safe{
+color:#22c55e;
+}
+
+li{
+margin:8px 0;
 }
 </style>
 </head>
@@ -86,6 +93,7 @@ button{
 <div class="container">
 
 <div class="logo">🛡️ ScamShield AI</div>
+
 <p class="subtitle">
 AI-powered scam message detection and safety assistant
 </p>
@@ -96,63 +104,84 @@ AI-powered scam message detection and safety assistant
 
 <textarea id="message" placeholder="Paste SMS, WhatsApp, Email message here..."></textarea>
 
-<button onclick="analyze()">Analyze Message</button>
+<button onclick="analyzeMessage()">
+Analyze Message
+</button>
 
 <div id="result" class="result"></div>
 
 </div>
+</div><script>
 
-</div>
+function analyzeMessage(){
 
+let text = document.getElementById("message").value.toLowerCase();
 
-<script>
+let risk = 0;
+let reasons = [];
 
-function analyze(){
+let scamWords = {
+"lottery":20,
+"winner":20,
+"prize":15,
+"otp":20,
+"verify":15,
+"urgent":15,
+"click link":20,
+"bank":10,
+"upi":15,
+"password":20,
+"account":10,
+"free money":25,
+"claim":15
+};
 
-let text=document.getElementById("message").value.toLowerCase();
-let result=document.getElementById("result");
+for(let word in scamWords){
+if(text.includes(word)){
+risk += scamWords[word];
+reasons.push("Suspicious sign detected: " + word);
+}
+}
 
-let risk=20;
-let reasons=[];
+if(risk > 100){
+risk = 100;
+}
 
-let keywords=[
-"urgent",
-"otp",
-"lottery",
-"winner",
-"click link",
-"prize",
-"bank",
-"verify account",
-"password",
-"upi"
-];
+let result = document.getElementById("result");
 
-keywords.forEach(word=>{
- if(text.includes(word)){
-   risk+=10;
-   reasons.push("Detected suspicious keyword: "+word);
- }
-});
+if(risk >= 70){
 
-
-if(risk>=60){
-
-result.innerHTML=
-`
-<h2 class="red">⚠️ High Risk Scam Detected</h2>
-<p>Risk Score: ${risk}%</p>
-<p>${reasons.join("<br>")}</p>
-<p>Do not share OTP, passwords or banking details.</p>
+result.innerHTML = `
+<h2 class="high">🚨 HIGH RISK SCAM</h2>
+<h3>Risk Score: ${risk}%</h3>
+<p><b>Why detected:</b></p>
+<ul>
+${reasons.map(r=>`<li>${r}</li>`).join("")}
+</ul>
+<p>⚠️ Do not share OTP, passwords or banking details.</p>
 `;
 
-}else{
+}
 
-result.innerHTML=
-`
-<h2 class="green">✅ Low Risk</h2>
-<p>Risk Score: ${risk}%</p>
-<p>No major scam indicators detected.</p>
+else if(risk >= 40){
+
+result.innerHTML = `
+<h2 class="medium">⚠️ MEDIUM RISK</h2>
+<h3>Risk Score: ${risk}%</h3>
+<ul>
+${reasons.map(r=>`<li>${r}</li>`).join("")}
+</ul>
+<p>Be careful before clicking links or sharing information.</p>
+`;
+
+}
+
+else{
+
+result.innerHTML = `
+<h2 class="safe">✅ LOW RISK</h2>
+<h3>Risk Score: ${risk}%</h3>
+<p>No major scam indicators found.</p>
 `;
 
 }
