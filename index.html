@@ -3,9 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ScamShield AI - Scam Detection Assistant</title>
+  
+  <!-- Social Media Preview Tags (For WhatsApp/Twitter/LinkedIn sharing) -->
+  <title>ScamShield AI - Instant Scam & Fraud Detection</title>
+  <meta name="description" content="Free AI-powered tool to analyze suspicious SMS, WhatsApp messages, emails, and screenshots for potential scams globally.">
+  <meta property="og:title" content="ScamShield AI - AI Scam Detector">
+  <meta property="og:description" content="Check if a message or screenshot is a scam instantly before clicking links or losing money.">
+  <meta property="og:type" content="website">
+
   <!-- OCR Library for Screenshot Reading -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  
   <style>
     :root {
       --bg-color: #0d1117;
@@ -85,6 +93,30 @@
 
     textarea:focus { border-color: var(--accent); }
 
+    /* Try Example Chips */
+    .sample-chips {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      background: #21262d;
+      border: 1px solid var(--border-color);
+      color: var(--text-sub);
+      padding: 4px 10px;
+      border-radius: 16px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
     /* Image Upload Box Styles */
     .image-upload-wrapper {
       margin-top: 10px;
@@ -140,6 +172,17 @@
     .btn-primary:hover { background-color: var(--accent-hover); }
     .btn-secondary { background-color: #374151; color: #fff; }
     .btn-secondary:hover { background-color: #4b5563; }
+    
+    .btn-share {
+      background-color: #25D366;
+      color: #000;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+    }
 
     /* Results section */
     .result-box {
@@ -238,6 +281,13 @@
       <h2>Analyze Suspicious Message</h2>
       <textarea id="msgInput" placeholder="Paste SMS, WhatsApp, Email or suspicious message here..."></textarea>
       
+      <!-- Try Example Chips -->
+      <div class="sample-chips">
+        <span style="font-size: 0.75rem; color: var(--text-sub); align-self: center;">Try sample:</span>
+        <div class="chip" onclick="loadSample(1)">⚡ Electricity Bill Scam</div>
+        <div class="chip" onclick="loadSample(2)">💼 Part-Time Job Scam</div>
+      </div>
+
       <!-- Screenshot Upload Section -->
       <div class="image-upload-wrapper">
         <label for="imgInput" class="upload-btn">
@@ -262,6 +312,9 @@
         <div class="safety-tip">
           <strong>Safety Action:</strong> <span id="safetyTip"></span>
         </div>
+
+        <!-- Share Report Button -->
+        <button class="btn-share" onclick="shareReport()">📲 Share Warning on WhatsApp</button>
       </div>
     </div>
 
@@ -317,6 +370,16 @@
   </div>
 
   <script>
+    // Load Samples
+    function loadSample(type) {
+      const input = document.getElementById('msgInput');
+      if (type === 1) {
+        input.value = "Dear consumer, your electricity connection will be disconnected tonight at 9:30 PM because your previous month bill was not updated. Please contact our electricity officer immediately at 9876543210.";
+      } else if (type === 2) {
+        input.value = "Congratulations! Your application for Remote Data Entry Specialist has been shortlisted. Daily payout ₹4,000 - ₹10,000 via UPI. Contact HR directly on WhatsApp: +91 9123456789.";
+      }
+    }
+
     // Extract Text from Uploaded Image (Screenshot OCR)
     async function extractTextFromImage(input) {
       if (!input.files || !input.files[0]) return;
@@ -401,6 +464,16 @@
         analyzeBtn.innerText = "Analyze Message";
         alert("Failed to analyze. Please try again.");
       }
+    }
+
+    // Share Warning Function
+    function shareReport() {
+      const riskLevel = document.getElementById('riskBadge').innerText;
+      const riskScore = document.getElementById('riskScore').innerText;
+      const text = `⚠️ *SCAM ALERT REPORT* ⚠️\n\nResult: *${riskLevel}* (Score: ${riskScore}/100)\n\nCheck suspicious messages or screenshots instantly before clicking links:\nhttps://scam-shield-ai-gules.vercel.app`;
+      
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+      window.open(whatsappUrl, '_blank');
     }
 
     function clearMsg() {
