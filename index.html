@@ -3,62 +3,412 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ScamShield AI - Global Scam Detection</title>
-  <link rel="stylesheet" href="style.css">
+  <title>ScamShield AI - Scam Detection Assistant</title>
+  <!-- OCR Library for Screenshot Reading -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <style>
+    :root {
+      --bg-color: #0d1117;
+      --card-bg: #161b22;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --text-main: #f3f4f6;
+      --text-sub: #9ca3af;
+      --border-color: #30363d;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      padding: 20px 12px;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .header {
+      text-align: center;
+      padding-top: 10px;
+    }
+
+    .header h1 {
+      font-size: 1.8rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .header p {
+      color: var(--text-sub);
+      font-size: 0.88rem;
+      margin-top: 6px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 110px;
+      background-color: #0d1117;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-main);
+      padding: 12px;
+      font-size: 0.95rem;
+      resize: none;
+      outline: none;
+    }
+
+    textarea:focus { border-color: var(--accent); }
+
+    /* Image Upload Box Styles */
+    .image-upload-wrapper {
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    .upload-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #21262d;
+      border: 1px dashed var(--accent);
+      color: var(--accent);
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .upload-btn:hover {
+      background: #282e38;
+    }
+
+    #ocrStatus {
+      font-size: 0.8rem;
+      color: #38bdf8;
+      margin-top: 4px;
+      display: none;
+      text-align: center;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary { background-color: var(--accent); color: #000; }
+    .btn-primary:hover { background-color: var(--accent-hover); }
+    .btn-secondary { background-color: #374151; color: #fff; }
+    .btn-secondary:hover { background-color: #4b5563; }
+
+    /* Results section */
+    .result-box {
+      margin-top: 15px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      background: #0d1117;
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .risk-badge {
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 6px;
+      display: inline-block;
+      text-align: center;
+      width: fit-content;
+    }
+
+    .reasons-list {
+      padding-left: 20px;
+      color: var(--text-sub);
+      font-size: 0.9rem;
+    }
+
+    .reasons-list li { margin-bottom: 4px; }
+
+    .safety-tip {
+      background-color: rgba(16, 185, 129, 0.1);
+      border-left: 3px solid var(--accent);
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      color: var(--accent);
+      border-radius: 0 6px 6px 0;
+    }
+
+    /* Helpline section */
+    .helpline-item {
+      background: #0d1117;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .helpline-item:last-child { margin-bottom: 0; }
+
+    .helpline-item h3 {
+      font-size: 1rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .clickable-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .clickable-link:hover { text-decoration: underline; }
+
+    .clickable-phone {
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: bold;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .clickable-phone:hover { background: rgba(56, 189, 248, 0.2); }
+
+    .disclaimer {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      text-align: center;
+      line-height: 1.4;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
 
   <div class="container">
-    <div class="logo">🛡️ ScamShield AI</div>
-    <p class="tagline">Global AI-powered scam detection & reporting assistant</p>
+    <div class="header">
+      <h1>🛡️ ScamShield AI</h1>
+      <p>Global AI-powered scam detection & reporting assistant</p>
+    </div>
 
     <div class="card">
       <h2>Analyze Suspicious Message</h2>
-      <textarea id="message" placeholder="Paste SMS, WhatsApp, Email or suspicious message here..."></textarea>
+      <textarea id="msgInput" placeholder="Paste SMS, WhatsApp, Email or suspicious message here..."></textarea>
       
-      <div class="button-group">
-        <button onclick="analyzeMessage()">Analyze Message</button>
-        <button class="clear-btn" onclick="clearInput()">Clear</button>
+      <!-- Screenshot Upload Section -->
+      <div class="image-upload-wrapper">
+        <label for="imgInput" class="upload-btn">
+          📸 Upload Screenshot (Extract Text)
+        </label>
+        <input type="file" id="imgInput" accept="image/*" style="display: none;" onchange="extractTextFromImage(this)">
+        <div id="ocrStatus">⏳ Reading text from image... Please wait.</div>
       </div>
 
-      <div id="result" class="result"></div>
-    </div>
+      <div class="btn-group">
+        <button class="btn-primary" id="analyzeBtn" onclick="analyzeMsg()">Analyze Message</button>
+        <button class="btn-secondary" onclick="clearMsg()">Clear</button>
+      </div>
 
-    <!-- Global Cyber Helpline Section -->
-    <div class="helpline-card">
-      <h3>🚨 Report Scams Globally</h3>
-      <p>If you have lost money or faced a cyber threat, report immediately to official authorities:</p>
-      
-      <div class="helpline-grid">
-        <div class="helpline-item">
-          <strong>🇮🇳 India</strong>
-          <a href="https://cybercrime.gov.in" target="_blank">cybercrime.gov.in</a> | Call: <strong>1930</strong>
+      <div id="resultBox" class="result-box">
+        <div id="riskBadge" class="risk-badge"></div>
+        <div><strong>Risk Score:</strong> <span id="riskScore"></span>/100</div>
+        <div>
+          <strong>Key Reasons:</strong>
+          <ul id="reasonsList" class="reasons-list"></ul>
         </div>
-        <div class="helpline-item">
-          <strong>🇺🇸 USA</strong>
-          <a href="https://reportfraud.ftc.gov" target="_blank">reportfraud.ftc.gov</a> | SMS to <strong>7726</strong>
-        </div>
-        <div class="helpline-item">
-          <strong>🇬🇧 UK</strong>
-          <a href="https://actionfraud.police.uk" target="_blank">actionfraud.police.uk</a> | SMS to <strong>7726</strong>
-        </div>
-        <div class="helpline-item">
-          <strong>🇨🇦 Canada</strong>
-          <a href="https://antifraudcentre-centreantifraude.ca" target="_blank">antifraudcentre.ca</a>
-        </div>
-        <div class="helpline-item full-width">
-          <strong>🌐 Other Countries</strong>
-          <a href="https://www.econsumer.gov" target="_blank">econsumer.gov (International Fraud Network)</a>
+        <div class="safety-tip">
+          <strong>Safety Action:</strong> <span id="safetyTip"></span>
         </div>
       </div>
     </div>
 
-    <!-- Legal Disclaimer -->
-    <footer class="disclaimer">
-      <p><strong>Disclaimer:</strong> ScamShield AI is an independent security awareness tool designed to assess scam risks automatically. Results are for informational guidance. Always consult official entities or local law enforcement for formal cyber crime reporting.</p>
-    </footer>
+    <!-- Global Helplines Section -->
+    <div class="card">
+      <h2>🚨 Report Scams Globally</h2>
+      <p style="color: var(--text-sub); font-size: 0.85rem; margin-bottom: 12px;">
+        If you have lost money or faced a cyber threat, report immediately to official authorities:
+      </p>
+
+      <div class="helpline-item">
+        <h3>🇮🇳 India</h3>
+        <p style="font-size: 0.88rem; color: var(--text-sub);">
+          <a href="https://cybercrime.gov.in" target="_blank" class="clickable-link">cybercrime.gov.in</a> | 
+          Call: <a href="tel:1930" class="clickable-phone">📞 1930</a>
+        </p>
+      </div>
+
+      <div class="helpline-item">
+        <h3>🇺🇸 USA</h3>
+        <p style="font-size: 0.88rem; color: var(--text-sub);">
+          <a href="https://reportfraud.ftc.gov" target="_blank" class="clickable-link">reportfraud.ftc.gov</a> | 
+          SMS: <a href="sms:7726" class="clickable-phone">💬 7726</a>
+        </p>
+      </div>
+
+      <div class="helpline-item">
+        <h3>🇬🇧 UK</h3>
+        <p style="font-size: 0.88rem; color: var(--text-sub);">
+          <a href="https://actionfraud.police.uk" target="_blank" class="clickable-link">actionfraud.police.uk</a> | 
+          SMS: <a href="sms:7726" class="clickable-phone">💬 7726</a>
+        </p>
+      </div>
+
+      <div class="helpline-item">
+        <h3>🇨🇦 Canada</h3>
+        <p style="font-size: 0.88rem; color: var(--text-sub);">
+          <a href="https://antifraudcentre.ca" target="_blank" class="clickable-link">antifraudcentre.ca</a>
+        </p>
+      </div>
+
+      <div class="helpline-item">
+        <h3>🌐 Other Countries</h3>
+        <p style="font-size: 0.88rem; color: var(--text-sub);">
+          <a href="https://econsumer.gov" target="_blank" class="clickable-link">econsumer.gov (International Fraud Network)</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <strong>Disclaimer:</strong> ScamShield AI is an independent security awareness tool designed to assess scam risks automatically. Results are for informational guidance. Always consult official entities or local law enforcement for formal cyber crime reporting.
+    </div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    // Extract Text from Uploaded Image (Screenshot OCR)
+    async function extractTextFromImage(input) {
+      if (!input.files || !input.files[0]) return;
+      
+      const file = input.files[0];
+      const statusDiv = document.getElementById('ocrStatus');
+      const msgInput = document.getElementById('msgInput');
+      
+      statusDiv.style.display = 'block';
+      statusDiv.innerText = "⏳ Extracting text from screenshot... Please wait.";
+
+      try {
+        const worker = await Tesseract.createWorker('eng');
+        const ret = await worker.recognize(file);
+        
+        msgInput.value = ret.data.text.trim();
+        statusDiv.style.color = '#10b981';
+        statusDiv.innerText = "✅ Text extracted successfully! Click Analyze Message.";
+        await worker.terminate();
+      } catch (err) {
+        statusDiv.style.color = '#ef4444';
+        statusDiv.innerText = "❌ Failed to read image text. Please try pasting manually.";
+      }
+    }
+
+    async function analyzeMsg() {
+      const msg = document.getElementById('msgInput').value.trim();
+      const resultBox = document.getElementById('resultBox');
+      const analyzeBtn = document.getElementById('analyzeBtn');
+
+      if (!msg) {
+        alert("Please paste text or upload a screenshot to analyze.");
+        return;
+      }
+
+      resultBox.style.display = 'none';
+      analyzeBtn.innerText = "Analyzing...";
+
+      try {
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg })
+        });
+
+        const data = await response.json();
+        analyzeBtn.innerText = "Analyze Message";
+
+        if (data.error) {
+          alert("Error: " + data.error);
+          return;
+        }
+
+        // Render Results
+        document.getElementById('riskScore').innerText = data.riskScore;
+        document.getElementById('safetyTip').innerText = data.safetyTip;
+
+        const badge = document.getElementById('riskBadge');
+        badge.innerText = data.riskLevel;
+
+        if (data.riskScore >= 70) {
+          badge.style.backgroundColor = '#ef4444';
+          badge.style.color = '#ffffff';
+        } else if (data.riskScore >= 40) {
+          badge.style.backgroundColor = '#f59e0b';
+          badge.style.color = '#000000';
+        } else {
+          badge.style.backgroundColor = '#10b981';
+          badge.style.color = '#000000';
+        }
+
+        const reasonsList = document.getElementById('reasonsList');
+        reasonsList.innerHTML = '';
+        data.reasons.forEach(r => {
+          const li = document.createElement('li');
+          li.innerText = r;
+          reasonsList.appendChild(li);
+        });
+
+        resultBox.style.display = 'flex';
+      } catch (err) {
+        analyzeBtn.innerText = "Analyze Message";
+        alert("Failed to analyze. Please try again.");
+      }
+    }
+
+    function clearMsg() {
+      document.getElementById('msgInput').value = '';
+      document.getElementById('resultBox').style.display = 'none';
+      document.getElementById('ocrStatus').style.display = 'none';
+      document.getElementById('imgInput').value = '';
+    }
+  </script>
 </body>
 </html>
