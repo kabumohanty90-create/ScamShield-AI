@@ -11,8 +11,10 @@
   <meta property="og:description" content="Check if a message or screenshot is a scam instantly before clicking links or losing money.">
   <meta property="og:type" content="website">
 
-  <!-- PWA App Tags -->
+  <!-- PWA App Tags & iPhone App Icon -->
   <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2092/2092663.png">
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2092/2092663.png">
   <meta name="theme-color" content="#10b981">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -100,7 +102,6 @@
 
     textarea:focus { border-color: var(--accent); }
 
-    /* Try Example Chips */
     .sample-chips {
       display: flex;
       gap: 6px;
@@ -124,7 +125,6 @@
       color: var(--accent);
     }
 
-    /* Image Upload Box Styles */
     .image-upload-wrapper {
       margin-top: 10px;
       margin-bottom: 10px;
@@ -146,9 +146,7 @@
       text-align: center;
     }
 
-    .upload-btn:hover {
-      background: #282e38;
-    }
+    .upload-btn:hover { background: #282e38; }
 
     #ocrStatus {
       font-size: 0.8rem;
@@ -191,7 +189,6 @@
       width: 100%;
     }
 
-    /* Results section */
     .result-box {
       margin-top: 15px;
       display: none;
@@ -229,7 +226,6 @@
       border-radius: 0 6px 6px 0;
     }
 
-    /* Feedback & Rating Styles */
     .feedback-box {
       margin-top: 12px;
       padding: 12px;
@@ -258,9 +254,7 @@
       padding: 0 2px;
     }
 
-    .star-rating .star.active {
-      color: #f59e0b;
-    }
+    .star-rating .star.active { color: #f59e0b; }
 
     .feedback-input-wrapper {
       display: flex;
@@ -280,9 +274,7 @@
       outline: none;
     }
 
-    .feedback-input:focus {
-      border-color: var(--accent);
-    }
+    .feedback-input:focus { border-color: var(--accent); }
 
     .btn-submit-feedback {
       background-color: var(--accent);
@@ -293,15 +285,10 @@
       border-radius: 6px;
     }
 
-    .btn-submit-feedback:hover {
-      background-color: var(--accent-hover);
-    }
+    .btn-submit-feedback:hover { background-color: var(--accent-hover); }
 
-    .hidden-element {
-      display: none !important;
-    }
+    .hidden-element { display: none !important; }
 
-    /* Helpline section */
     .helpline-item {
       background: #0d1117;
       border: 1px solid var(--border-color);
@@ -360,14 +347,12 @@
       <h2>Analyze Suspicious Message</h2>
       <textarea id="msgInput" placeholder="Paste SMS, WhatsApp, Email or suspicious message here..."></textarea>
       
-      <!-- Try Example Chips -->
       <div class="sample-chips">
         <span style="font-size: 0.75rem; color: var(--text-sub); align-self: center;">Try sample:</span>
         <div class="chip" onclick="loadSample(1)">⚡ Electricity Bill Scam</div>
         <div class="chip" onclick="loadSample(2)">💼 Part-Time Job Scam</div>
       </div>
 
-      <!-- Screenshot Upload Section -->
       <div class="image-upload-wrapper">
         <label for="imgInput" class="upload-btn">
           📸 Upload Screenshot (Extract Text)
@@ -392,10 +377,8 @@
           <strong>Safety Action:</strong> <span id="safetyTip"></span>
         </div>
 
-        <!-- Share Report Button -->
         <button class="btn-share" onclick="shareReport()">📲 Share Warning on WhatsApp</button>
 
-        <!-- Feedback / Rating Section -->
         <div class="feedback-box">
           <p id="feedbackTitle" class="feedback-title">Was this analysis helpful? Rate us:</p>
           <div id="starContainer" class="star-rating">
@@ -418,7 +401,6 @@
       </div>
     </div>
 
-    <!-- Global Helplines Section -->
     <div class="card">
       <h2>🚨 Report Scams Globally</h2>
       <p style="color: var(--text-sub); font-size: 0.85rem; margin-bottom: 12px;">
@@ -472,12 +454,10 @@
   <script>
     let currentSelectedRating = 0;
 
-    // Register Service Worker for PWA App Installation
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
 
-    // Load Samples
     function loadSample(type) {
       const input = document.getElementById('msgInput');
       if (type === 1) {
@@ -487,7 +467,6 @@
       }
     }
 
-    // Extract Text from Uploaded Image (Screenshot OCR)
     async function extractTextFromImage(input) {
       if (!input.files || !input.files[0]) return;
       
@@ -541,7 +520,6 @@
           return;
         }
 
-        // Render Results
         document.getElementById('riskScore').innerText = data.riskScore;
         document.getElementById('safetyTip').innerText = data.safetyTip;
 
@@ -574,17 +552,15 @@
       }
     }
 
-    // Share Warning Function
     function shareReport() {
       const riskLevel = document.getElementById('riskBadge').innerText;
       const riskScore = document.getElementById('riskScore').innerText;
-      const text = `⚠️ *SCAM ALERT REPORT* ⚠️\n\nResult: *${riskLevel}* (Score: ${riskScore}/100)\n\nCheck suspicious messages or screenshots instantly before clicking links:\nhttps://scam-shield-ai-gules.vercel.app`;
+      const text = `⚠️ *SCAM ALERT REPORT* ⚠️\n\nResult: *${riskLevel}* (Score: ${riskScore}/100)\n\nCheck suspicious messages or screenshots instantly before clicking links:\nhttps://scamshield-ai-two.vercel.app`;
       
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
       window.open(whatsappUrl, '_blank');
     }
 
-    // Rating Logic
     function selectRating(stars) {
       currentSelectedRating = stars;
       const starElems = document.querySelectorAll('#starContainer .star');
