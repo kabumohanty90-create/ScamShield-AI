@@ -3,21 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ScamShield AI</title>
+  <title>ScamShield AI - Global Scam Detection</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <div class="container">
     <div class="logo">🛡️ ScamShield AI</div>
-    <p class="tagline">AI-powered scam message detection and safety assistant</p>
+    <p class="tagline">Global AI-powered scam detection & reporting assistant</p>
 
     <div class="card">
       <h2>Analyze Suspicious Message</h2>
       <textarea id="message" placeholder="Paste SMS, WhatsApp, Email or suspicious message here..."></textarea>
-      <button onclick="analyzeMessage()">Analyze Message</button>
+      
+      <div class="button-group">
+        <button onclick="analyzeMessage()">Analyze Message</button>
+        <button class="clear-btn" onclick="clearInput()">Clear</button>
+      </div>
+
       <div id="result" class="result"></div>
     </div>
+
+    <!-- Global Cyber Helpline Section -->
+    <div class="helpline-card">
+      <h3>🚨 Report Scams Globally</h3>
+      <p>If you have lost money or faced a cyber threat, report immediately to official authorities:</p>
+      
+      <div class="helpline-grid">
+        <div class="helpline-item">
+          <strong>🇮🇳 India</strong>
+          <a href="https://cybercrime.gov.in" target="_blank">cybercrime.gov.in</a> | Call: <strong>1930</strong>
+        </div>
+        <div class="helpline-item">
+          <strong>🇺🇸 USA</strong>
+          <a href="https://reportfraud.ftc.gov" target="_blank">reportfraud.ftc.gov</a> | SMS to <strong>7726</strong>
+        </div>
+        <div class="helpline-item">
+          <strong>🇬🇧 UK</strong>
+          <a href="https://actionfraud.police.uk" target="_blank">actionfraud.police.uk</a> | SMS to <strong>7726</strong>
+        </div>
+        <div class="helpline-item">
+          <strong>🇨🇦 Canada</strong>
+          <a href="https://antifraudcentre-centreantifraude.ca" target="_blank">antifraudcentre.ca</a>
+        </div>
+        <div class="helpline-item full-width">
+          <strong>🌐 Other Countries</strong>
+          <a href="https://www.econsumer.gov" target="_blank">econsumer.gov (International Fraud Network)</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legal Disclaimer -->
+    <footer class="disclaimer">
+      <p><strong>Disclaimer:</strong> ScamShield AI is an independent security awareness tool designed to assess scam risks automatically. Results are for informational guidance. Always consult official entities or local law enforcement for formal cyber crime reporting.</p>
+    </footer>
   </div>
 
   <script src="script.js"></script>
