@@ -30,7 +30,19 @@ function analyzeMessage() {
     addRisk(40, "Unverified external link/URL detected (Phishing Risk)");
   }
 
-  // 2. Fake Investment & Job Offers
+  // 2. Direct OTP Request (HIGH RISK ALWAYS)
+  const isDirectOTPRequest = text.includes("share otp") || 
+                             text.includes("send otp") || 
+                             text.includes("send your otp") || 
+                             text.includes("tell me otp") || 
+                             text.includes("share your otp") || 
+                             text.includes("share otp with");
+
+  if (isDirectOTPRequest) {
+    addRisk(70, "Direct OTP request detected (High risk of account takeover)");
+  }
+
+  // 3. Investment & Job Schemes
   if (text.includes("guaranteed") || text.includes("zero risk") || text.includes("100% risk free")) {
     addRisk(25, "Unrealistic promise: Claims guaranteed returns or zero risk");
   }
@@ -43,32 +55,28 @@ function analyzeMessage() {
     addRisk(25, "Redirects to an unverified private messaging group");
   }
 
-  // 3. OTP & Account Theft Threats
-  if (text.includes("share otp") || text.includes("send otp") || text.includes("tell me otp") || text.includes("share your otp") || text.includes("share otp with")) {
-    addRisk(70, "Direct OTP request detected (High risk of account takeover)");
-  }
-
   if (text.includes("lottery") || text.includes("won prize") || text.includes("winner")) {
     addRisk(40, "Fake lottery or prize claim attempt");
   }
 
-  // Utility & Banking Threats
-  if ((text.includes("account") || text.includes("card") || text.includes("sim") || text.includes("electricity") || text.includes("bill") || text.includes("connection")) && 
-      (text.includes("blocked") || text.includes("suspended") || text.includes("deactivated") || text.includes("disconnected") || text.includes("unpaid"))) {
-    addRisk(35, "Urgency tactic: Threats of service disconnection or account block");
+  // Utility, Banking & Account Threat Alerts
+  if ((text.includes("account") || text.includes("card") || text.includes("sim") || text.includes("electricity") || text.includes("bill") || text.includes("connection") || text.includes("email") || text.includes("suspicious login")) && 
+      (text.includes("blocked") || text.includes("suspended") || text.includes("deactivated") || text.includes("disconnected") || text.includes("unpaid") || text.includes("security alert") || text.includes("unknown device"))) {
+    addRisk(35, "Urgency/Fear tactic: Fake security alert or service disconnection threat");
   }
 
   if (text.includes("kyc") && (text.includes("expired") || text.includes("update immediately") || hasLink)) {
     addRisk(35, "Fake urgent KYC update request");
   }
 
-  // 4. Safe Whitelist Filter
-  const isNormalBankAlert = (text.includes("credited") || text.includes("debited") || text.includes("spent on card") || text.includes("otp for login")) && !hasLink;
+  // 4. Safe Whitelist Filter (Strict check: MUST NOT ask for OTP)
+  const isNormalBankAlert = (text.includes("credited") || text.includes("debited") || text.includes("spent on card")) && !hasLink && !isDirectOTPRequest;
 
   if (isNormalBankAlert) {
     risk = Math.max(0, risk - 40);
   }
 
+  // Cap max risk
   if (risk > 100) {
     risk = 100;
   }
