@@ -40,30 +40,39 @@ Message to analyze:
     console.log("API Error, using fallback engine");
   }
 
-  // Fallback Rule Engine (If API Key Quota fails, website will still work 100%)
+  // Fallback Rule Engine
   const lowerMsg = message.toLowerCase();
   let score = 15;
   let level = "LOW RISK / SAFE";
   let reasons = ["No immediate high-risk scam indicators found."];
   let tip = "Always verify official communications before sharing sensitive details.";
 
-  if (lowerMsg.includes("sbi") || lowerMsg.includes("pan") || lowerMsg.includes("block") || lowerMsg.includes("irs") || lowerMsg.includes("arrest") || lowerMsg.includes("interac") || lowerMsg.includes("http")) {
+  // High Risk Scam Keywords (Updated with Electricity & Delivery scams)
+  const highRiskKeywords = [
+    "sbi", "pan", "block", "irs", "arrest", "interac", "http", 
+    "electricity", "disconnect", "bill", "courier", "parcel", 
+    "package", "officer", "immediately", "police", "lottery"
+  ];
+
+  const containsHighRisk = highRiskKeywords.some(keyword => lowerMsg.includes(keyword));
+
+  if (containsHighRisk) {
     score = 92;
     level = "HIGH RISK SCAM";
     reasons = [
-      "Contains urgent threats (account block / legal action / arrest).",
-      "Includes suspicious external URL or unverified payment links.",
-      "Impersonates official government or banking organizations."
+      "Creates artificial urgency and panic (threat of disconnection, arrest, or financial penalty).",
+      "Asks to contact an unverified personal mobile number or click third-party links.",
+      "Classic impersonation technique of official utility companies or government services."
     ];
-    tip = "Do not click on links. Contact official support directly using verified websites.";
-  } else if (lowerMsg.includes("job") || lowerMsg.includes("earn") || lowerMsg.includes("whatsapp") || lowerMsg.includes("parcel")) {
+    tip = "Do not call back personal numbers or click links. Verify directly through official electricity/service portals.";
+  } else if (lowerMsg.includes("job") || lowerMsg.includes("earn") || lowerMsg.includes("whatsapp") || lowerMsg.includes("telegram")) {
     score = 65;
     level = "MEDIUM RISK";
     reasons = [
       "Promotes unrealistically high earnings or payment requests.",
-      "Asks to move conversation to unverified personal messaging platforms."
+      "Asks to move conversation to unverified personal messaging platforms like Telegram/WhatsApp."
     ];
-    tip = "Be cautious with unsolicited offers asking for advance fees or personal details.";
+    tip = "Be cautious with unsolicited job offers asking for advance fees or completing task-based money offers.";
   }
 
   return res.status(200).json({
