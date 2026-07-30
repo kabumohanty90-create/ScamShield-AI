@@ -4,12 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- Social Media Preview Tags (For WhatsApp/Twitter/LinkedIn sharing) -->
+  <!-- Social Media Preview Tags -->
   <title>ScamShield AI - Instant Scam & Fraud Detection</title>
   <meta name="description" content="Free AI-powered tool to analyze suspicious SMS, WhatsApp messages, emails, and screenshots for potential scams globally.">
   <meta property="og:title" content="ScamShield AI - AI Scam Detector">
   <meta property="og:description" content="Check if a message or screenshot is a scam instantly before clicking links or losing money.">
   <meta property="og:type" content="website">
+
+  <!-- PWA App Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#10b981">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ScamShield">
 
   <!-- OCR Library for Screenshot Reading -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -388,7 +395,7 @@
         <!-- Share Report Button -->
         <button class="btn-share" onclick="shareReport()">📲 Share Warning on WhatsApp</button>
 
-        <!-- New Feedback / Rating Section -->
+        <!-- Feedback / Rating Section -->
         <div class="feedback-box">
           <p id="feedbackTitle" class="feedback-title">Was this analysis helpful? Rate us:</p>
           <div id="starContainer" class="star-rating">
@@ -465,6 +472,11 @@
   <script>
     let currentSelectedRating = 0;
 
+    // Register Service Worker for PWA App Installation
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+
     // Load Samples
     function loadSample(type) {
       const input = document.getElementById('msgInput');
@@ -511,7 +523,7 @@
       }
 
       resultBox.style.display = 'none';
-      resetFeedbackUI(); // Reset feedback box for new analysis
+      resetFeedbackUI();
       analyzeBtn.innerText = "Analyzing...";
 
       try {
@@ -596,12 +608,10 @@
         date: new Date().toISOString()
       };
 
-      // Save locally (or send to database in future)
       let reviews = JSON.parse(localStorage.getItem('scamshield_reviews') || '[]');
       reviews.push(feedbackData);
       localStorage.setItem('scamshield_reviews', JSON.stringify(reviews));
 
-      // UI Update
       document.getElementById('starContainer').classList.add('hidden-element');
       document.getElementById('feedbackTitle').classList.add('hidden-element');
       document.getElementById('feedbackInputWrapper').classList.add('hidden-element');
