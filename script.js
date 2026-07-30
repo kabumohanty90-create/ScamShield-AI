@@ -12,12 +12,17 @@ function analyzeMessage() {
     }
   }
 
-  // 1. Phishing & External Links
-  const urlRegex = /(https?:\/\/[^\s]+|bit\.ly\/[^\s]+|tinyurl\.com\/[^\s]+|[a-zA-Z0-9-]+\.(xyz|top|site|club|link|online|tech|ru|cn)[^\s]*)/i;
-  const mentionsLink = urlRegex.test(rawText);
+  // 1. Link & URL Detection (Bitly, http, https, www, .com, etc.)
+  const hasLink = text.includes("http://") || 
+                  text.includes("https://") || 
+                  text.includes("bit.ly") || 
+                  text.includes("tinyurl") || 
+                  text.includes("www.") || 
+                  text.includes(".com/") || 
+                  text.includes(".xyz");
 
-  if (mentionsLink) {
-    addRisk(35, "Suspicious or external URL link detected");
+  if (hasLink) {
+    addRisk(40, "Suspicious or external URL link detected in message");
   }
 
   // 2. Individual Investment & Scheme Indicators
@@ -33,26 +38,27 @@ function analyzeMessage() {
     addRisk(25, "Direct invitation to unverified social messaging group");
   }
 
-  // 3. Phishing, Lottery & Threats
+  // 3. Phishing, Lottery, Urgency Threats & Direct OTP Theft
+  if (text.includes("share otp") || text.includes("send otp") || text.includes("tell me otp") || text.includes("share your otp") || text.includes("share otp with")) {
+    addRisk(70, "Direct OTP request detected - High risk of account takeover");
+  }
+
   if (text.includes("lottery") || text.includes("won prize") || text.includes("winner")) {
     addRisk(40, "Fake lottery or prize claim attempt detected");
   }
 
-  if (text.includes("share otp") || text.includes("send otp") || text.includes("tell me otp")) {
-    addRisk(45, "Direct OTP request detected - High risk of account takeover");
+  // Utility, Bank & Urgency Threats
+  if ((text.includes("account") || text.includes("card") || text.includes("sim") || text.includes("electricity") || text.includes("bill") || text.includes("connection")) && 
+      (text.includes("blocked") || text.includes("suspended") || text.includes("deactivated") || text.includes("disconnected") || text.includes("unpaid"))) {
+    addRisk(35, "Fear-inducing account block or service disconnection threat detected");
   }
 
-  if ((text.includes("account") || text.includes("card") || text.includes("sim")) && 
-      (text.includes("blocked") || text.includes("suspended") || text.includes("deactivated"))) {
-    addRisk(40, "Fear-inducing account block/suspension threat detected");
-  }
-
-  if (text.includes("kyc") && (text.includes("expired") || text.includes("update immediately") || mentionsLink)) {
+  if (text.includes("kyc") && (text.includes("expired") || text.includes("update immediately") || hasLink)) {
     addRisk(35, "Urgent fake KYC update request detected");
   }
 
   // 4. Safe Whitelist Filter
-  const isNormalBankAlert = (text.includes("credited") || text.includes("debited") || text.includes("spent on card") || text.includes("otp for login")) && !mentionsLink;
+  const isNormalBankAlert = (text.includes("credited") || text.includes("debited") || text.includes("spent on card") || text.includes("otp for login")) && !hasLink;
 
   if (isNormalBankAlert) {
     risk = Math.max(0, risk - 40);
