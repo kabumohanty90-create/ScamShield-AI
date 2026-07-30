@@ -123,121 +123,111 @@ Analyze Message
 
 </div>
 
-</div><script>
+</div>
 
+<script>
 function analyzeMessage(){
 
-let text = document.getElementById("message").value.toLowerCase();
+let rawText = document.getElementById("message").value;
+let text = rawText.toLowerCase();
 
 let risk = 0;
 let reasons = [];
 
 function addRisk(points, reason){
-risk += points;
-reasons.push(reason);
+  risk += points;
+  if (!reasons.includes(reason)) {
+    reasons.push(reason);
+  }
 }
 
+// 1. Phishing & External Links
+const urlRegex = /(https?:\/\/[^\s]+|bit\.ly\/[^\s]+|tinyurl\.com\/[^\s]+|[a-zA-Z0-9-]+\.(xyz|top|site|club|link|online|tech|ru|cn)[^\s]*)/i;
+const mentionsLink = urlRegex.test(rawText);
 
-// Scam patterns
-
-if(text.includes("lottery") || text.includes("prize") || text.includes("winner")){
-addRisk(35,"Fake lottery or prize offer detected");
+if (mentionsLink) {
+  addRisk(35, "Suspicious or external URL link detected");
 }
 
-if(text.includes("otp")){
-addRisk(35,"OTP request detected - scammers often use this to steal accounts");
+// 2. Individual Investment & Scheme Indicators
+if(text.includes("guaranteed") || text.includes("zero risk") || text.includes("100% risk free")){
+  addRisk(25, "Unrealistic promise (guaranteed returns / zero risk)");
 }
 
-if(text.includes("bank") && (text.includes("verify") || text.includes("link") || text.includes("otp"))){
-addRisk(40,"Bank verification scam pattern detected");
+if(text.includes("profit") || text.includes("earn daily") || text.includes("earning") || text.includes("work from home")){
+  addRisk(25, "Quick income or daily profit claim detected");
 }
 
-if(text.includes("click") && text.includes("link")){
-addRisk(30,"Suspicious link request detected");
+if(text.includes("telegram") || text.includes("whatsapp group") || text.includes("crypto")){
+  addRisk(25, "Direct invitation to unverified social messaging group");
 }
 
-if(text.includes("account blocked") || text.includes("account will be blocked") || text.includes("suspended")){
-addRisk(35,"Account threat or blocking message detected");
+// 3. Phishing, Lottery & Threats
+if(text.includes("lottery") || text.includes("won prize") || text.includes("winner")){
+  addRisk(40, "Fake lottery or prize claim attempt detected");
 }
 
-if(text.includes("kyc") || text.includes("update your details")){
-addRisk(30,"Possible fake KYC/update request detected");
+if(text.includes("share otp") || text.includes("send otp") || text.includes("tell me otp")){
+  addRisk(45, "Direct OTP request detected - High risk of account takeover");
 }
 
-if(text.includes("password") || text.includes("pin")){
-addRisk(35,"Sensitive information request detected");
+if((text.includes("account") || text.includes("card") || text.includes("sim")) && 
+   (text.includes("blocked") || text.includes("suspended") || text.includes("deactivated"))){
+  addRisk(40, "Fear-inducing account block/suspension threat detected");
 }
 
-if(text.includes("free money") || text.includes("guaranteed profit")){
-addRisk(35,"Unrealistic money promise detected");
+if(text.includes("kyc") && (text.includes("expired") || text.includes("update immediately") || mentionsLink)){
+  addRisk(35, "Urgent fake KYC update request detected");
 }
 
-if(text.includes("job") && (text.includes("pay") || text.includes("fee") || text.includes("registration"))){
-addRisk(30,"Possible fake job scam detected");
+// 4. Safe Whitelist Filter
+const isNormalBankAlert = (text.includes("credited") || text.includes("debited") || text.includes("spent on card") || text.includes("otp for login")) && !mentionsLink;
+
+if(isNormalBankAlert){
+  risk = Math.max(0, risk - 40);
 }
 
-if(text.includes("investment") || text.includes("crypto")){
-addRisk(25,"Investment scam indicator detected");
-}
-
-if(text.includes("urgent") || text.includes("immediately") || text.includes("act now")){
-addRisk(20,"Pressure or urgency tactic detected");
-}
-
-
-// Limit score
-
+// Cap max risk
 if(risk > 100){
-risk = 100;
+  risk = 100;
 }
 
-
+// Render UI
 let result = document.getElementById("result");
-
 let reasonsHTML = "";
 
 reasons.forEach(function(item){
-reasonsHTML += `<p class="reason">⚠️ ${item}</p>`;
+  reasonsHTML += `<p class="reason">⚠️ ${item}</p>`;
 });
 
-
-if(risk >= 70){
-
-result.innerHTML = `
-<h2 class="high">🚨 HIGH RISK SCAM</h2>
-<h3>Risk Score: ${risk}%</h3>
-${reasonsHTML}
-<p class="tip">🛡️ Safety Tip: Do not click links or share OTP, passwords, or banking details.</p>
-`;
-
+if(risk >= 65){
+  result.innerHTML = `
+    <h2 class="high">🚨 HIGH RISK SCAM</h2>
+    <h3>Risk Score: ${risk}%</h3>
+    ${reasonsHTML}
+    <p class="tip">🛡️ Safety Tip: Never click unknown links, nor share OTPs or personal information.</p>
+  `;
+}
+else if(risk >= 30){
+  result.innerHTML = `
+    <h2 class="medium">⚠️ MEDIUM RISK</h2>
+    <h3>Risk Score: ${risk}%</h3>
+    ${reasonsHTML}
+    <p class="tip">🛡️ Caution: Verify the sender through official channels before proceeding.</p>
+  `;
+}
+else {
+  result.innerHTML = `
+    <h2 class="safe">✅ LOW RISK / SAFE</h2>
+    <h3>Risk Score: ${risk}%</h3>
+    <p>No major scam indicators found in this message.</p>
+    <p class="tip">🛡️ Safe to read, but always keep your security practices active.</p>
+  `;
 }
 
-else if(risk >= 40){
-
-result.innerHTML = `
-<h2 class="medium">⚠️ MEDIUM RISK</h2>
-<h3>Risk Score: ${risk}%</h3>
-${reasonsHTML}
-<p class="tip">🛡️ Verify the sender before taking any action.</p>
-`;
+result.style.display = "block";
 
 }
-
-else{
-
-result.innerHTML = `
-<h2 class="safe">✅ LOW RISK</h2>
-<h3>Risk Score: ${risk}%</h3>
-<p>No strong scam indicators found.</p>
-<p class="tip">🛡️ Still stay cautious with unknown messages.</p>
-`;
-
-}
-
-result.style.display="block";
-
-}
-
 </script>
 
 </body>
