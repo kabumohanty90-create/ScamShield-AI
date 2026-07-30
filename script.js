@@ -1,125 +1,53 @@
-function analyzeMessage() {
+async function analyzeMessage() {
   let rawText = document.getElementById("message").value;
-  let text = rawText.toLowerCase();
+  let result = document.getElementById("result");
 
-  if (!text.trim()) {
+  if (!rawText.trim()) {
     alert("Please paste a message first!");
     return;
   }
 
-  let risk = 0;
-  let reasons = [];
-
-  function addRisk(points, reason) {
-    risk += points;
-    if (!reasons.includes(reason)) {
-      reasons.push(reason);
-    }
-  }
-
-  // 1. Link & URL Detection
-  const hasLink = text.includes("http://") || 
-                  text.includes("https://") || 
-                  text.includes("bit.ly") || 
-                  text.includes("tinyurl") || 
-                  text.includes("www.") || 
-                  text.includes(".com/") || 
-                  text.includes(".xyz");
-
-  if (hasLink) {
-    addRisk(40, "Unverified external link/URL detected (Phishing Risk)");
-  }
-
-  // 2. Direct OTP Request (HIGH RISK ALWAYS)
-  const isDirectOTPRequest = text.includes("share otp") || 
-                             text.includes("send otp") || 
-                             text.includes("send your otp") || 
-                             text.includes("tell me otp") || 
-                             text.includes("share your otp") || 
-                             text.includes("share otp with");
-
-  if (isDirectOTPRequest) {
-    addRisk(70, "Direct OTP request detected (High risk of account takeover)");
-  }
-
-  // 3. Investment & Job Schemes
-  if (text.includes("guaranteed") || text.includes("zero risk") || text.includes("100% risk free")) {
-    addRisk(25, "Unrealistic promise: Claims guaranteed returns or zero risk");
-  }
-
-  if (text.includes("profit") || text.includes("earn daily") || text.includes("earning") || text.includes("work from home")) {
-    addRisk(25, "High-yield investment scheme or quick daily income claim");
-  }
-
-  if (text.includes("telegram") || text.includes("whatsapp group") || text.includes("crypto")) {
-    addRisk(25, "Redirects to an unverified private messaging group");
-  }
-
-  if (text.includes("lottery") || text.includes("won prize") || text.includes("winner")) {
-    addRisk(40, "Fake lottery or prize claim attempt");
-  }
-
-  // Utility, Banking & Account Threat Alerts
-  if ((text.includes("account") || text.includes("card") || text.includes("sim") || text.includes("electricity") || text.includes("bill") || text.includes("connection") || text.includes("email") || text.includes("suspicious login")) && 
-      (text.includes("blocked") || text.includes("suspended") || text.includes("deactivated") || text.includes("disconnected") || text.includes("unpaid") || text.includes("security alert") || text.includes("unknown device"))) {
-    addRisk(35, "Urgency/Fear tactic: Fake security alert or service disconnection threat");
-  }
-
-  if (text.includes("kyc") && (text.includes("expired") || text.includes("update immediately") || hasLink)) {
-    addRisk(35, "Fake urgent KYC update request");
-  }
-
-  // 4. Safe Whitelist Filter (Strict check: MUST NOT ask for OTP)
-  const isNormalBankAlert = (text.includes("credited") || text.includes("debited") || text.includes("spent on card")) && !hasLink && !isDirectOTPRequest;
-
-  if (isNormalBankAlert) {
-    risk = Math.max(0, risk - 40);
-  }
-
-  // Cap max risk
-  if (risk > 100) {
-    risk = 100;
-  }
-
-  // Build Detailed Reasons List
-  let result = document.getElementById("result");
-  let reasonsHTML = "";
-
-  if (reasons.length > 0) {
-    reasonsHTML += "<div style='margin: 15px 0;'><strong>🔍 Why this score was given:</strong><ul style='padding-left: 20px; margin-top: 8px;'>";
-    reasons.forEach(function(item) {
-      reasonsHTML += `<li class="reason">⚠️ ${item}</li>`;
-    });
-    reasonsHTML += "</ul></div>";
-  }
-
-  // Render UI Result
-  if (risk >= 65) {
-    result.innerHTML = `
-      <h2 class="high">🚨 HIGH RISK SCAM</h2>
-      <h3>Risk Score: ${risk}%</h3>
-      ${reasonsHTML}
-      <p class="tip">🛡️ <strong>Safety Tip:</strong> Do not click on any links, share OTPs, or transfer money.</p>
-      <button class="copy-btn" onclick="copyReport(${risk})">📋 Copy Incident Report Summary</button>
-    `;
-  } else if (risk >= 30) {
-    result.innerHTML = `
-      <h2 class="medium">⚠️ MEDIUM RISK</h2>
-      <h3>Risk Score: ${risk}%</h3>
-      ${reasonsHTML}
-      <p class="tip">🛡️ <strong>Caution:</strong> Verify the sender through official channels before acting.</p>
-      <button class="copy-btn" onclick="copyReport(${risk})">📋 Copy Incident Report Summary</button>
-    `;
-  } else {
-    result.innerHTML = `
-      <h2 class="safe">✅ LOW RISK / SAFE</h2>
-      <h3>Risk Score: ${risk}%</h3>
-      <p>No major scam indicators found in this message.</p>
-      <p class="tip">🛡️ <strong>Safety Tip:</strong> Safe to read, but always keep your security practices active.</p>
-    `;
-  }
-
   result.style.display = "block";
+  result.innerHTML = `<h3>🔍 Analyzing message with Gemini AI...</h3>`;
+
+  try {
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: rawText })
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      result.innerHTML = `<h3 style="color:red;">Error: ${data.error}</h3>`;
+      return;
+    }
+
+    let reasonsHTML = "";
+    if (data.reasons && data.reasons.length > 0) {
+      reasonsHTML += "<div style='margin: 15px 0;'><strong>🔍 Why this score was given:</strong><ul style='padding-left: 20px; margin-top: 8px;'>";
+      data.reasons.forEach(function(item) {
+        reasonsHTML += `<li class="reason">⚠️ ${item}</li>`;
+      });
+      reasonsHTML += "</ul></div>";
+    }
+
+    let riskClass = "safe";
+    if (data.riskScore >= 65) riskClass = "high";
+    else if (data.riskScore >= 30) riskClass = "medium";
+
+    result.innerHTML = `
+      <h2 class="${riskClass}">${data.riskLevel}</h2>
+      <h3>Risk Score: ${data.riskScore}%</h3>
+      ${reasonsHTML}
+      <p class="tip">🛡️ <strong>Safety Tip:</strong> ${data.safetyTip}</p>
+      <button class="copy-btn" onclick="copyReport(${data.riskScore})">📋 Copy Incident Report Summary</button>
+    `;
+
+  } catch (err) {
+    result.innerHTML = `<h3 style="color:red;">Failed to analyze message. Please try again.</h3>`;
+  }
 }
 
 function clearInput() {
@@ -132,6 +60,6 @@ function copyReport(riskScore) {
   let reportText = `[ScamShield AI Report]\nRisk Assessment: ${riskScore}%\nSuspicious Message Text:\n"${msg}"\n\nReported via ScamShield AI Security Assistant.`;
   
   navigator.clipboard.writeText(reportText).then(() => {
-    alert("Report summary copied to clipboard! You can paste this in your complaint.");
+    alert("Report summary copied to clipboard!");
   });
 }
