@@ -222,6 +222,78 @@
       border-radius: 0 6px 6px 0;
     }
 
+    /* Feedback & Rating Styles */
+    .feedback-box {
+      margin-top: 12px;
+      padding: 12px;
+      background-color: #161b22;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .feedback-title {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+    }
+
+    .star-rating {
+      font-size: 1.5rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .star-rating .star {
+      color: #4b5563;
+      transition: color 0.15s ease, transform 0.1s ease;
+      display: inline-block;
+      padding: 0 2px;
+    }
+
+    .star-rating .star.active {
+      color: #f59e0b;
+    }
+
+    .feedback-input-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .feedback-input {
+      width: 100%;
+      padding: 8px 10px;
+      background-color: #0d1117;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-main);
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .feedback-input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-submit-feedback {
+      background-color: var(--accent);
+      color: #000;
+      padding: 8px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      border-radius: 6px;
+    }
+
+    .btn-submit-feedback:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .hidden-element {
+      display: none !important;
+    }
+
     /* Helpline section */
     .helpline-item {
       background: #0d1117;
@@ -315,6 +387,27 @@
 
         <!-- Share Report Button -->
         <button class="btn-share" onclick="shareReport()">📲 Share Warning on WhatsApp</button>
+
+        <!-- New Feedback / Rating Section -->
+        <div class="feedback-box">
+          <p id="feedbackTitle" class="feedback-title">Was this analysis helpful? Rate us:</p>
+          <div id="starContainer" class="star-rating">
+            <span class="star" onclick="selectRating(1)">★</span>
+            <span class="star" onclick="selectRating(2)">★</span>
+            <span class="star" onclick="selectRating(3)">★</span>
+            <span class="star" onclick="selectRating(4)">★</span>
+            <span class="star" onclick="selectRating(5)">★</span>
+          </div>
+
+          <div id="feedbackInputWrapper" class="feedback-input-wrapper hidden-element">
+            <input type="text" id="feedbackComment" class="feedback-input" placeholder="Add a short review (Optional)..." />
+            <button class="btn-submit-feedback" onclick="submitFeedback()">Submit Review</button>
+          </div>
+
+          <p id="feedbackThankYou" class="hidden-element" style="color: var(--accent); font-size: 0.85rem; font-weight: bold; margin-top: 4px;">
+            ✓ Thank you for your feedback!
+          </p>
+        </div>
       </div>
     </div>
 
@@ -370,6 +463,8 @@
   </div>
 
   <script>
+    let currentSelectedRating = 0;
+
     // Load Samples
     function loadSample(type) {
       const input = document.getElementById('msgInput');
@@ -416,6 +511,7 @@
       }
 
       resultBox.style.display = 'none';
+      resetFeedbackUI(); // Reset feedback box for new analysis
       analyzeBtn.innerText = "Analyzing...";
 
       try {
@@ -476,11 +572,60 @@
       window.open(whatsappUrl, '_blank');
     }
 
+    // Rating Logic
+    function selectRating(stars) {
+      currentSelectedRating = stars;
+      const starElems = document.querySelectorAll('#starContainer .star');
+      starElems.forEach((star, index) => {
+        if (index < stars) {
+          star.classList.add('active');
+        } else {
+          star.classList.remove('active');
+        }
+      });
+      document.getElementById('feedbackInputWrapper').classList.remove('hidden-element');
+    }
+
+    function submitFeedback() {
+      if (currentSelectedRating === 0) return;
+
+      const comment = document.getElementById('feedbackComment').value.trim();
+      const feedbackData = {
+        rating: currentSelectedRating,
+        comment: comment,
+        date: new Date().toISOString()
+      };
+
+      // Save locally (or send to database in future)
+      let reviews = JSON.parse(localStorage.getItem('scamshield_reviews') || '[]');
+      reviews.push(feedbackData);
+      localStorage.setItem('scamshield_reviews', JSON.stringify(reviews));
+
+      // UI Update
+      document.getElementById('starContainer').classList.add('hidden-element');
+      document.getElementById('feedbackTitle').classList.add('hidden-element');
+      document.getElementById('feedbackInputWrapper').classList.add('hidden-element');
+      document.getElementById('feedbackThankYou').classList.remove('hidden-element');
+    }
+
+    function resetFeedbackUI() {
+      currentSelectedRating = 0;
+      const starElems = document.querySelectorAll('#starContainer .star');
+      starElems.forEach(star => star.classList.remove('active'));
+      
+      document.getElementById('feedbackComment').value = '';
+      document.getElementById('starContainer').classList.remove('hidden-element');
+      document.getElementById('feedbackTitle').classList.remove('hidden-element');
+      document.getElementById('feedbackInputWrapper').classList.add('hidden-element');
+      document.getElementById('feedbackThankYou').classList.add('hidden-element');
+    }
+
     function clearMsg() {
       document.getElementById('msgInput').value = '';
       document.getElementById('resultBox').style.display = 'none';
       document.getElementById('ocrStatus').style.display = 'none';
       document.getElementById('imgInput').value = '';
+      resetFeedbackUI();
     }
   </script>
 </body>
