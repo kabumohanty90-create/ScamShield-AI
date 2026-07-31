@@ -67,7 +67,7 @@
       justify-content: center;
       gap: 15px;
       padding-bottom: 10px;
-      border-b: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
     }
 
     .nav-link {
@@ -340,6 +340,11 @@
       color: var(--accent);
       text-decoration: none;
       font-weight: 500;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      text-align: left;
     }
 
     .clickable-link:hover { text-decoration: underline; }
@@ -387,7 +392,51 @@
 
     .modal-box h3 { color: var(--accent); margin-bottom: 10px; }
     .modal-box p { font-size: 0.85rem; color: var(--text-sub); line-height: 1.5; margin-bottom: 15px; }
-    .modal-close-btn { background: var(--border-color); color: #fff; padding: 6px 16px; border-radius: 6px; float: right; }
+    .modal-close-btn { background: var(--border-color); color: #fff; padding: 6px 16px; border-radius: 6px; float: right; border: none; cursor: pointer; }
+
+    /* 2026 Guide Styles */
+    .scam-guide-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .scam-item {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+
+    .scam-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .scam-title {
+      color: var(--danger);
+      font-weight: bold;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .back-btn {
+      background-color: #21262d;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 15px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      width: auto;
+    }
+
+    .back-btn:hover {
+      background-color: #30363d;
+    }
   </style>
 </head>
 <body>
@@ -406,127 +455,161 @@
       <p>Global AI-powered scam detection & reporting assistant</p>
     </div>
 
-    <div class="card">
-      <h2>Analyze Suspicious Message</h2>
-      <textarea id="msgInput" placeholder="Paste SMS, WhatsApp, Email or suspicious message here..."></textarea>
-      
-      <div class="sample-chips">
-        <span style="font-size: 0.75rem; color: var(--text-sub); align-self: center;">Try sample:</span>
-        <div class="chip" onclick="loadSample(1)">⚡ Electricity Bill Scam</div>
-        <div class="chip" onclick="loadSample(2)">💼 Part-Time Job Scam</div>
-      </div>
-
-      <div class="image-upload-wrapper">
-        <label for="imgInput" class="upload-btn">
-          📸 Upload Screenshot (Extract Text)
-        </label>
-        <input type="file" id="imgInput" accept="image/*" style="display: none;" onchange="extractTextFromImage(this)">
-        <div id="ocrStatus">⏳ Reading text from image... Please wait.</div>
-      </div>
-
-      <div class="btn-group">
-        <button class="btn-primary" id="analyzeBtn" onclick="analyzeMsg()">Analyze Message</button>
-        <button class="btn-secondary" onclick="clearMsg()">Clear</button>
-      </div>
-
-      <div id="resultBox" class="result-box">
-        <div id="riskBadge" class="risk-badge"></div>
-        <div><strong>Risk Score:</strong> <span id="riskScore"></span>/100</div>
-        <div>
-          <strong>Key Reasons:</strong>
-          <ul id="reasonsList" class="reasons-list"></ul>
-        </div>
-        <div class="safety-tip">
-          <strong>Safety Action:</strong> <span id="safetyTip"></span>
+    <!-- MAIN APP CONTENT -->
+    <div id="mainSection">
+      <div class="card">
+        <h2>Analyze Suspicious Message</h2>
+        <textarea id="msgInput" placeholder="Paste SMS, WhatsApp, Email or suspicious message here..."></textarea>
+        
+        <div class="sample-chips">
+          <span style="font-size: 0.75rem; color: var(--text-sub); align-self: center;">Try sample:</span>
+          <div class="chip" onclick="loadSample(1)">⚡ Electricity Bill Scam</div>
+          <div class="chip" onclick="loadSample(2)">💼 Part-Time Job Scam</div>
         </div>
 
-        <button class="btn-share" onclick="shareReport()">📲 Share Warning on WhatsApp</button>
+        <div class="image-upload-wrapper">
+          <label for="imgInput" class="upload-btn">
+            📸 Upload Screenshot (Extract Text)
+          </label>
+          <input type="file" id="imgInput" accept="image/*" style="display: none;" onchange="extractTextFromImage(this)">
+          <div id="ocrStatus">⏳ Reading text from image... Please wait.</div>
+        </div>
 
-        <div class="feedback-box">
-          <p id="feedbackTitle" class="feedback-title">Was this analysis helpful? Rate us:</p>
-          <div id="starContainer" class="star-rating">
-            <span class="star" onclick="selectRating(1)">★</span>
-            <span class="star" onclick="selectRating(2)">★</span>
-            <span class="star" onclick="selectRating(3)">★</span>
-            <span class="star" onclick="selectRating(4)">★</span>
-            <span class="star" onclick="selectRating(5)">★</span>
+        <div class="btn-group">
+          <button class="btn-primary" id="analyzeBtn" onclick="analyzeMsg()">Analyze Message</button>
+          <button class="btn-secondary" onclick="clearMsg()">Clear</button>
+        </div>
+
+        <div id="resultBox" class="result-box">
+          <div id="riskBadge" class="risk-badge"></div>
+          <div><strong>Risk Score:</strong> <span id="riskScore"></span>/100</div>
+          <div>
+            <strong>Key Reasons:</strong>
+            <ul id="reasonsList" class="reasons-list"></ul>
+          </div>
+          <div class="safety-tip">
+            <strong>Safety Action:</strong> <span id="safetyTip"></span>
           </div>
 
-          <div id="feedbackInputWrapper" class="feedback-input-wrapper hidden-element">
-            <input type="text" id="feedbackComment" class="feedback-input" placeholder="Add a short review (Optional)..." />
-            <button class="btn-submit-feedback" onclick="submitFeedback()">Submit Review</button>
-          </div>
+          <button class="btn-share" onclick="shareReport()">📲 Share Warning on WhatsApp</button>
 
-          <p id="feedbackThankYou" class="hidden-element" style="color: var(--accent); font-size: 0.85rem; font-weight: bold; margin-top: 4px;">
-            ✓ Thank you for your feedback!
+          <div class="feedback-box">
+            <p id="feedbackTitle" class="feedback-title">Was this analysis helpful? Rate us:</p>
+            <div id="starContainer" class="star-rating">
+              <span class="star" onclick="selectRating(1)">★</span>
+              <span class="star" onclick="selectRating(2)">★</span>
+              <span class="star" onclick="selectRating(3)">★</span>
+              <span class="star" onclick="selectRating(4)">★</span>
+              <span class="star" onclick="selectRating(5)">★</span>
+            </div>
+
+            <div id="feedbackInputWrapper" class="feedback-input-wrapper hidden-element">
+              <input type="text" id="feedbackComment" class="feedback-input" placeholder="Add a short review (Optional)..." />
+              <button class="btn-submit-feedback" onclick="submitFeedback()">Submit Review</button>
+            </div>
+
+            <p id="feedbackThankYou" class="hidden-element" style="color: var(--accent); font-size: 0.85rem; font-weight: bold; margin-top: 4px;">
+              ✓ Thank you for your feedback!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Informative Content Card (Essential for AdSense Approval) -->
+      <div class="card" style="margin-top: 20px;">
+        <h2 style="font-size: 1.1rem; color: var(--accent);">💡 How ScamShield AI Works</h2>
+        <p style="font-size: 0.85rem; color: var(--text-sub); line-height: 1.5; margin-bottom: 10px;">
+          ScamShield AI uses advanced heuristic metrics to analyze suspicious text messages, job offers, and unexpected banking alerts for common phishing indicators.
+        </p>
+        <h3 style="font-size: 0.95rem; margin-top: 8px; margin-bottom: 6px; color: var(--text-main);">Common Cyber Security Tips:</h3>
+        <ul style="padding-left: 18px; font-size: 0.82rem; color: var(--text-sub); line-height: 1.5;">
+          <li>Never share OTPs, UPI PINs, or sensitive banking credentials with anyone.</li>
+          <li>Be cautious of urgent threats regarding electricity cutoff or account suspension.</li>
+          <li>Always verify official website URLs before clicking on links sent via SMS.</li>
+        </ul>
+      </div>
+
+      <!-- Scam Awareness Guides Section (Fixed for AdSense & No 404 Error) -->
+      <div class="card" style="text-align: center; margin-top: 20px;">
+        <h2 style="font-size: 1.1rem; color: var(--accent); margin-bottom: 8px;">📚 Scam Awareness Resources</h2>
+        <p style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 12px;">Read our detailed guides to learn how to identify and protect yourself from online fraud.</p>
+        <button onclick="toggleGuideView(true)" class="clickable-link" style="font-weight: bold; display: inline-block;">👉 Latest Scams in 2026 & Protection Guide</button>
+      </div>
+
+      <div class="card" style="margin-top: 20px;">
+        <h2>🚨 Report Scams Globally</h2>
+        <p style="color: var(--text-sub); font-size: 0.85rem; margin-bottom: 12px;">
+          If you have lost money or faced a cyber threat, report immediately to official authorities:
+        </p>
+
+        <div class="helpline-item">
+          <h3>🇮🇳 India</h3>
+          <p style="font-size: 0.88rem; color: var(--text-sub);">
+            <a href="https://cybercrime.gov.in" target="_blank" class="clickable-link">cybercrime.gov.in</a> | 
+            Call: <a href="tel:1930" class="clickable-phone">📞 1930</a>
+          </p>
+        </div>
+
+        <div class="helpline-item">
+          <h3>🇺🇸 USA</h3>
+          <p style="font-size: 0.88rem; color: var(--text-sub);">
+            <a href="https://reportfraud.ftc.gov" target="_blank" class="clickable-link">reportfraud.ftc.gov</a> | 
+            SMS: <a href="sms:7726" class="clickable-phone">💬 7726</a>
+          </p>
+        </div>
+
+        <div class="helpline-item">
+          <h3>🇬🇧 UK</h3>
+          <p style="font-size: 0.88rem; color: var(--text-sub);">
+            <a href="https://actionfraud.police.uk" target="_blank" class="clickable-link">actionfraud.police.uk</a> | 
+            SMS: <a href="sms:7726" class="clickable-phone">💬 7726</a>
+          </p>
+        </div>
+
+        <div class="helpline-item">
+          <h3>🇨🇦 Canada</h3>
+          <p style="font-size: 0.88rem; color: var(--text-sub);">
+            <a href="https://antifraudcentre.ca" target="_blank" class="clickable-link">antifraudcentre.ca</a>
+          </p>
+        </div>
+
+        <div class="helpline-item">
+          <h3>🌐 Other Countries</h3>
+          <p style="font-size: 0.88rem; color: var(--text-sub);">
+            <a href="https://econsumer.gov" target="_blank" class="clickable-link">econsumer.gov (International Fraud Network)</a>
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Informative Content Card (Essential for AdSense Approval) -->
-    <div class="card">
-      <h2 style="font-size: 1.1rem; color: var(--accent);">💡 How ScamShield AI Works</h2>
-      <p style="font-size: 0.85rem; color: var(--text-sub); line-height: 1.5; margin-bottom: 10px;">
-        ScamShield AI uses advanced heuristic metrics to analyze suspicious text messages, job offers, and unexpected banking alerts for common phishing indicators.
-      </p>
-      <h3 style="font-size: 0.95rem; margin-top: 8px; margin-bottom: 6px; color: var(--text-main);">Common Cyber Security Tips:</h3>
-      <ul style="padding-left: 18px; font-size: 0.82rem; color: var(--text-sub); line-height: 1.5;">
-        <li>Never share OTPs, UPI PINs, or sensitive banking credentials with anyone.</li>
-        <li>Be cautious of urgent threats regarding electricity cutoff or account suspension.</li>
-        <li>Always verify official website URLs before clicking on links sent via SMS.</li>
-      </ul>
-    </div>
+    <!-- LATEST 2026 SCAMS SECTION (Initially Hidden) -->
+    <div id="guideSection" class="scam-guide-card hidden-element">
+      <button class="back-btn" onclick="toggleGuideView(false)">← Back to Scam Analyzer</button>
+      <h2 style="font-size: 1.25rem; color: var(--accent); margin-bottom: 8px;">🛡️ Latest Scams in 2026 & Protection Guide</h2>
+      <p style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 18px; line-height: 1.5;">Stay informed about the most prevalent online fraud tactics in 2026 and learn how to defend yourself.</p>
 
-    <!-- Scam Awareness Guides Section (Added for AdSense Compliance) -->
-    <div class="card" style="text-align: center;">
-      <h2 style="font-size: 1.1rem; color: var(--accent); margin-bottom: 8px;">📚 Scam Awareness Resources</h2>
-      <p style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 12px;">Read our detailed guides to learn how to identify and protect yourself from online fraud.</p>
-      <a href="guides/latest-scams-2026.html" class="clickable-link" style="font-size: 0.95rem; font-weight: bold;">👉 Latest Scams in 2026 & Protection Guide</a>
-    </div>
-
-    <div class="card">
-      <h2>🚨 Report Scams Globally</h2>
-      <p style="color: var(--text-sub); font-size: 0.85rem; margin-bottom: 12px;">
-        If you have lost money or faced a cyber threat, report immediately to official authorities:
-      </p>
-
-      <div class="helpline-item">
-        <h3>🇮🇳 India</h3>
-        <p style="font-size: 0.88rem; color: var(--text-sub);">
-          <a href="https://cybercrime.gov.in" target="_blank" class="clickable-link">cybercrime.gov.in</a> | 
-          Call: <a href="tel:1930" class="clickable-phone">📞 1930</a>
-        </p>
+      <div class="scam-item">
+        <div class="scam-title">1. AI Voice Cloning & Family Emergency Fraud</div>
+        <p style="font-size: 0.88rem; color: var(--text-sub); line-height: 1.5;">Scammers collect short audio samples from social media to clone the exact voice of family members, calling you in panic to request emergency wire transfers or UPI payments.</p>
+        <p style="color: var(--accent); font-size: 0.82rem; margin-top: 6px;"><strong>Protection Tip:</strong> Always hang up and call back your family member directly on their regular phone number before transferring any funds.</p>
       </div>
 
-      <div class="helpline-item">
-        <h3>🇺🇸 USA</h3>
-        <p style="font-size: 0.88rem; color: var(--text-sub);">
-          <a href="https://reportfraud.ftc.gov" target="_blank" class="clickable-link">reportfraud.ftc.gov</a> | 
-          SMS: <a href="sms:7726" class="clickable-phone">💬 7726</a>
-        </p>
+      <div class="scam-item">
+        <div class="scam-title">2. Digital Arrest & Fake Law Enforcement Video Calls</div>
+        <p style="font-size: 0.88rem; color: var(--text-sub); line-height: 1.5;">Fraudsters impersonating Police, CBI, or Customs officials initiate WhatsApp video calls wearing uniforms, threatening immediate arrest for illegal packages or money laundering unless you pay bail online.</p>
+        <p style="color: var(--accent); font-size: 0.82rem; margin-top: 6px;"><strong>Protection Tip:</strong> Real police or government departments never conduct court hearings or demand money transfers over video calls.</p>
       </div>
 
-      <div class="helpline-item">
-        <h3>🇬🇧 UK</h3>
-        <p style="font-size: 0.88rem; color: var(--text-sub);">
-          <a href="https://actionfraud.police.uk" target="_blank" class="clickable-link">actionfraud.police.uk</a> | 
-          SMS: <a href="sms:7726" class="clickable-phone">💬 7726</a>
-        </p>
+      <div class="scam-item">
+        <div class="scam-title">3. Telegram & WhatsApp Part-Time Task Traps</div>
+        <p style="font-size: 0.88rem; color: var(--text-sub); line-height: 1.5;">Messages offering high income for liking YouTube videos or writing hotel reviews. After giving small payouts, they lure you into investing large sums into cryptocurrency or VIP tasks.</p>
+        <p style="color: var(--accent); font-size: 0.82rem; margin-top: 6px;"><strong>Protection Tip:</strong> Legitimate employers will never ask you to pay or deposit money to receive job tasks.</p>
       </div>
 
-      <div class="helpline-item">
-        <h3>🇨🇦 Canada</h3>
-        <p style="font-size: 0.88rem; color: var(--text-sub);">
-          <a href="https://antifraudcentre.ca" target="_blank" class="clickable-link">antifraudcentre.ca</a>
-        </p>
-      </div>
-
-      <div class="helpline-item">
-        <h3>🌐 Other Countries</h3>
-        <p style="font-size: 0.88rem; color: var(--text-sub);">
-          <a href="https://econsumer.gov" target="_blank" class="clickable-link">econsumer.gov (International Fraud Network)</a>
-        </p>
+      <div class="scam-item">
+        <div class="scam-title">4. Electricity & APK Bill Update Links</div>
+        <p style="font-size: 0.88rem; color: var(--text-sub); line-height: 1.5;">SMS alerts warning that your power supply will be cut off tonight unless you click a link to install a fake electricity app (APK) or make a small ₹10 bill update payment.</p>
+        <p style="color: var(--accent); font-size: 0.82rem; margin-top: 6px;"><strong>Protection Tip:</strong> Electricity boards never send APK files via SMS. Always pay bills through official state portals or verified payment apps.</p>
       </div>
     </div>
 
@@ -569,6 +652,20 @@
 
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function toggleGuideView(showGuide) {
+      const mainSection = document.getElementById('mainSection');
+      const guideSection = document.getElementById('guideSection');
+      
+      if (showGuide) {
+        mainSection.classList.add('hidden-element');
+        guideSection.classList.remove('hidden-element');
+      } else {
+        guideSection.classList.add('hidden-element');
+        mainSection.classList.remove('hidden-element');
+      }
+      window.scrollTo(0, 0);
+    }
 
     function loadSample(type) {
       const input = document.getElementById('msgInput');
