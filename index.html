@@ -368,7 +368,7 @@
       margin-top: 10px;
     }
 
-    /* Modal Styles */
+    /* Modal & Inline Policy Styles */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -393,6 +393,22 @@
     .modal-box h3 { color: var(--accent); margin-bottom: 10px; }
     .modal-box p { font-size: 0.85rem; color: var(--text-sub); line-height: 1.5; margin-bottom: 15px; }
     .modal-close-btn { background: var(--border-color); color: #fff; padding: 6px 16px; border-radius: 6px; float: right; border: none; cursor: pointer; }
+
+    .policy-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      line-height: 1.5;
+    }
+
+    .policy-card h3 {
+      color: var(--accent);
+      font-size: 0.98rem;
+      margin-bottom: 8px;
+    }
 
     /* 2026 Guide Styles */
     .scam-guide-card {
@@ -445,9 +461,9 @@
     
     <!-- Top Navigation for Policy Links -->
     <nav class="nav-bar">
-      <button class="nav-link" onclick="openModal('aboutModal')">About Us</button>
-      <button class="nav-link" onclick="openModal('privacyModal')">Privacy Policy</button>
-      <button class="nav-link" onclick="openModal('termsModal')">Terms & Conditions</button>
+      <a class="nav-link" href="#about">About Us</a>
+      <a class="nav-link" href="#privacy">Privacy Policy</a>
+      <a class="nav-link" href="#terms">Terms & Conditions</a>
     </nav>
 
     <div class="header">
@@ -580,6 +596,22 @@
           </p>
         </div>
       </div>
+
+      <!-- Legal & Policy Sections (Directly Crawlable by Google AdSense & Search Console) -->
+      <div id="about" class="policy-card" style="margin-top: 20px;">
+        <h3>About ScamShield AI</h3>
+        <p>ScamShield AI is an intelligent security awareness web application designed to help users identify potential digital scams, phishing messages, and online fraud threats globally. Our goal is to promote digital literacy and empower everyday internet users against phishing attacks.</p>
+      </div>
+
+      <div id="privacy" class="policy-card" style="margin-top: 15px;">
+        <h3>Privacy Policy</h3>
+        <p>We take user privacy seriously. ScamShield AI does not permanently store, log, or share the messages or images you upload for analysis. All content processed is evaluated temporarily to provide real-time risk scores. Third-party advertising vendors (such as Google AdSense) may use cookies to serve relevant ads based on non-identifiable user visits.</p>
+      </div>
+
+      <div id="terms" class="policy-card" style="margin-top: 15px;">
+        <h3>Terms & Conditions</h3>
+        <p>ScamShield AI provides automated risk assessments for informational and educational guidance only. Automated results do not constitute formal legal or financial advice. We urge all users to confirm suspicious financial activities with official institutions or local cybercrime authorities.</p>
+      </div>
     </div>
 
     <!-- LATEST 2026 SCAMS SECTION (Initially Hidden) -->
@@ -618,40 +650,12 @@
     </div>
   </div>
 
-  <!-- Policy Modals -->
-  <div id="aboutModal" class="modal-overlay">
-    <div class="modal-box">
-      <h3>About ScamShield AI</h3>
-      <p>ScamShield AI is an intelligent security awareness web application designed to help users identify potential digital scams, phishing messages, and online fraud threats globally.</p>
-      <button class="modal-close-btn" onclick="closeModal('aboutModal')">Close</button>
-    </div>
-  </div>
-
-  <div id="privacyModal" class="modal-overlay">
-    <div class="modal-box">
-      <h3>Privacy Policy</h3>
-      <p>We take user privacy seriously. ScamShield AI does not permanently store, log, or sell the messages or images you upload for analysis. All content processed is evaluated temporarily to provide real-time risk scores.</p>
-      <button class="modal-close-btn" onclick="closeModal('privacyModal')">Close</button>
-    </div>
-  </div>
-
-  <div id="termsModal" class="modal-overlay">
-    <div class="modal-box">
-      <h3>Terms & Conditions</h3>
-      <p>ScamShield AI provides risk assessment for informational and educational purposes only. Automated results do not constitute formal legal or financial advice. Always verify with official authorities before taking financial actions.</p>
-      <button class="modal-close-btn" onclick="closeModal('termsModal')">Close</button>
-    </div>
-  </div>
-
   <script>
     let currentSelectedRating = 0;
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
-
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     function toggleGuideView(showGuide) {
       const mainSection = document.getElementById('mainSection');
